@@ -22,7 +22,7 @@ help_info = {
 if api_id is None:
     api_id, api_hash = preinstall()
 
-client = TelegramClient("account", api_id, api_hash, system_version="4.16.30-vxDECODED", auto_reconnect=True, receive_updates=False)
+client = TelegramClient("account", api_id, api_hash, system_version="4.16.30-vxDECODED", auto_reconnect=True)
 
 
 async def start_client():
