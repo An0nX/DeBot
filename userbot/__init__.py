@@ -4,6 +4,14 @@ from telethon.tl.functions.channels import GetParticipantsRequest, JoinChannelRe
 from telethon.tl.types import ChannelParticipantsSearch
 from userbot.src.config import *
 from userbot.src.preinstall import preinstall
+import argparse
+import socks
+
+parser = argparse.ArgumentParser(description="Параметры запуска")
+parser.add_argument("-s", type=str, default="account", help="Путь к сессии")
+parser.add_argument('-p', nargs=5, type=str, default=None, help='Прокси (Proxy Type, IP, Port, username, password)')
+
+args = parser.parse_args()
 
 help_info = {
 'chat': """<b>❓ ᴋ᧐ʍᴀнды:</b>
@@ -22,7 +30,18 @@ help_info = {
 if api_id is None:
     preinstall()
 
-client = TelegramClient("account", api_id, api_hash, system_version="4.16.30-vxDECODED", auto_reconnect=True, receive_updates=False)
+if args.p is not None:
+    proxy_type = None
+    if args.p[0].lower() == 'http':
+        proxy_type = socks.HTTP
+    elif args.p[0].lower() == 'socks4':
+        proxy_type = socks.SOCKS4
+    elif args.p[0].lower() == 'socks5':
+        proxy_type = socks.SOCKS5
+
+    client = TelegramClient(args.s, api_id, api_hash, proxy=(proxy_type, args.p[1], int(args.p[2]), True, args.p[3] if args.p[3] != '0' else None, args.p[4] if args.p[4] != '0' else None))
+else:
+    client = TelegramClient(args.s, api_id, api_hash)
 
 
 async def start_client():
