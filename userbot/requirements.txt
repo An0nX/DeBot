@@ -2,3 +2,5 @@ art
 colorama
 setuptools
 telethon
+PySocks
+python-socks
