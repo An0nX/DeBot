@@ -4,7 +4,7 @@ import importlib
 import subprocess
 import sys
 
-from colorama import Fore
+from rich.console import Console
 import telethon
 from telethon import events
 from art import text2art
@@ -21,7 +21,7 @@ def convert_to_fancy_font(text):
 
 def auto_import_modules():
     all_modules = len(ALL_MODULES)
-    print(f"-> [modules] - Всего модулей: {all_modules}")
+    console.print(f"-> [modules] - Всего модулей: {all_modules}", style="bold green")
     imported_modules = 0
     for module_name in ALL_MODULES:
         module_path = f"{module_folder}.{module_name}"
@@ -33,18 +33,17 @@ def auto_import_modules():
                     if info_value['category'] != None:
                         for i in range(len(info_value['pattern'].split('|'))):
                             help_info[info_value['category']] += f"\n<code>{info_value['pattern'].split('|')[i]}</code> -> <i>{convert_to_fancy_font(info_value['description'].split('|')[i])}</i>"
-                print(f"-> [modules] - Импортирован модуль: {module_name}")
+                console.print(f"-> [modules] - Импортирован модуль: {module_name}", style="bold green")
                 imported_modules += 1
             except ImportError as e:
-                print(f"-> [modules] - Не удалось импортировать модуль: {module_path}, причина: {e}")
+                console.print(f"-> [modules] - Не удалось импортировать модуль: {module_path}, причина: {e}", style="bold red")
             except Exception as e:
-                print(f"-> [modules] - Произошла ошибка при импорте модуля {module_path}: {str(e)}")
-    print(f"-> [modules] - Импортировано модулей: {imported_modules}")
+                console.print(f"-> [modules] - Произошла ошибка при импорте модуля {module_path}: {str(e)}", style="bold red")
+    console.print(f"-> [modules] - Импортировано модулей: {imported_modules}", style="bold green")
 
 
 @client.on(events.NewMessage(pattern=".addmod"))
 async def addmod(event):
-    await event.delete()
     if not event.is_reply:
         return
     reply_message = await event.get_reply_message()
@@ -59,7 +58,8 @@ async def addmod(event):
             await client.download_media(reply_message, file=f'{os.getcwd()}\\{download_path}.py')
 
             if module_path in sys.modules:
-                print(f"-> [.addmod] - Модуль {module_path} уже импортирован.")
+                console.print(f"-> [.addmod] - Модуль {module_path} уже импортирован.", style="bold red")
+                await event.edit("❌ <b>Модуль уже импортирован</b>", parse_mode="HTML")
             else:
                 missing_libraries = []
 
@@ -73,7 +73,8 @@ async def addmod(event):
                                     if module_name not in sys.modules:
                                         missing_libraries.append(module_name)
                 except Exception as e:
-                    print(f"-> [.addmod] - Ошибка при чтении файла: {str(e)}")
+                    console.print(f"-> [.addmod] - Ошибка при чтении файла: {str(e)}", style="bold red")
+                    await event.edit("❌ <b>Произошла ошибка при импорте модуля</b>", parse_mode="HTML")
 
                 if missing_libraries:
                     for lib_name in missing_libraries:
@@ -87,12 +88,15 @@ async def addmod(event):
                         if info_value['category'] is not None:
                             for i in range(len(info_value['pattern'].split('|'))):
                                 help_info[info_value['category']] += f"\n<code>{info_value['pattern'].split('|')[i]}</code> -> <i>{convert_to_fancy_font(info_value['description'].split('|')[i])}</i>"
-                            print(f"-> [.addmod] - Добавлен модуль: {file_name.split('.')[0]}")
+                            console.print(f"-> [.addmod] - Добавлен модуль: {file_name.split('.')[0]}", style="bold green")
+                            await event.edit(f"✅ <b>Модуль</b> <code>{file_name.split('.')[0]}</code> <b>успешно добавлен</b>", parse_mode="HTML")
                 except ImportError as e:
-                    print(f"-> [.addmod] - Не удалось импортировать модуль: {module_path}, причина: {e}")
+                    console.print(f"-> [.addmod] - Не удалось импортировать модуль: {module_path}, причина: {e}", style="bold red")
+                    await event.edit("❌ <b>Произошла ошибка при импорте модуля</b>", parse_mode="HTML")
                     os.remove(f'{os.getcwd()}\\{download_path}.py')
                 except Exception as e:
-                    print(f"-> [.addmod] - Произошла ошибка при импорте модуля {module_path}: {str(e)}")
+                    console.print(f"-> [.addmod] - Произошла ошибка при импорте модуля {module_path}: {str(e)}", style="bold red")
+                    await event.edit("❌ <b>Произошла ошибка при импорте модуля</b>", parse_mode="HTML")
 
 
 @client.on(events.NewMessage(pattern='.delmod (.+)'))
@@ -106,18 +110,18 @@ async def delmod(event):
         try:
             os.remove(path)
             await event.edit(f"✅ <b>Модуль</b> <code>{module_name}</code> <b>успешно удален</b>", parse_mode="HTML")
-            print(f"-> [.delmod] - Модуль {module_name} успешно удален")
+            console.print(f"-> [.delmod] - Модуль {module_name} успешно удален", style="bold green")
         except Exception as e:
             await event.edit(f"❌ <b>Произошла ошибка при удалении модуля</b> <code>{module_name}</code>: <code>{str(e)}</code>", parse_mode="HTML")
-            print(f"-> [.delmod] - Произошла ошибка при удалении модуля {module_name}: {str(e)}")
+            console.print(f"-> [.delmod] - Произошла ошибка при удалении модуля {module_name}: {str(e)}", style="bold red")
     else:
         await event.edit(f"❌ <b>Модуль</b> <code>{module_name}</code> <b>не найден</b>", parse_mode="HTML")
-        print(f"-> [.delmod] - Модуль {module_name} не найден")
+        console.print(f"-> [.delmod] - Модуль {module_name} не найден", style="bold red")
 
 
 @client.on(events.NewMessage(outgoing=True, pattern=".help"))
 async def help_commands(event):
-    print("-> [.help]")
+    console.print("-> [.help]")
     await client.edit_message(
         event.message,
         help_info['chat']+ '\n' + help_info['fun'] + '\n' + help_info['tools'],
@@ -127,7 +131,7 @@ async def help_commands(event):
 
 @client.on(events.NewMessage(outgoing=True, pattern=(".about")))
 async def awake(event):
-    print("-> [.about]")
+    console.print("-> [.about]")
     await client.edit_message(
         event.message,
         f"""<b>😈 𝚄𝚜𝚎𝚛𝚋𝚘𝚝 𝚋𝚢: <a href="t.me/whynothacked">𝕯𝖊𝕮𝖔𝖉𝖊𝖉</a></b>
@@ -139,25 +143,25 @@ async def awake(event):
 
 if __name__ == "__main__":
     os.system("cls") if os.name == "nt" else os.system("clear")
-    print(
-        Fore.CYAN
-        + text2art('DeBot', font='random', chr_ignore=True)
-    ), time.sleep(1)
+    console = Console()
 
-    print(
-        Fore.YELLOW
-        + """
+    console.print(
+        text2art('DeBot', font='random', chr_ignore=True)
+    , style='cyan'), time.sleep(1)
+
+    console.print(
+        """
                             coded by @whynothacked"""
-    ), time.sleep(2)
+    , style='yellow'), time.sleep(2)
 
     (
-        print(
-            f"""{Fore.RED}            • Пропиши .help в любом чате для получения команд бота"""
-        ),
+        console.print(
+            """            • Пропиши .help в любом чате для получения команд бота"""
+        , style='red'),
         time.sleep(1),
     )
 
-    print(f"""{Fore.GREEN}                           ↓ Снизу будут логи""")
+    console.print("""                           ↓ Снизу будут логи""", style='green')
 
     auto_import_modules()
 

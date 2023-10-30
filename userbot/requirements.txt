@@ -1,4 +1,7 @@
 art
-colorama
+rich
 setuptools
 telethon
+PySocks
+python-socks
+
