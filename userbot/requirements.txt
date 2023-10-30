@@ -2,3 +2,4 @@ art
 colorama
 setuptools
 telethon
+socks
