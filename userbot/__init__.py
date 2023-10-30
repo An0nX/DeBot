@@ -28,7 +28,7 @@ help_info = {
 }
 
 if api_id is None:
-    preinstall()
+    api_id, api_hash = preinstall()
 
 if args.p is not None:
     proxy_type = None
