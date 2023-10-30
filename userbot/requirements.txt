@@ -4,4 +4,3 @@ setuptools
 telethon
 PySocks
 python-socks
-
