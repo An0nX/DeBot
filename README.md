@@ -8,3 +8,5 @@
 
 ## Канал с модулями: [DeBot_userbot](https://t.me/DeBot_userbot)
 Предложить модуль в канал или задонатить: @whynothacked
+
+# Переезали: https://github.com/DeBotCommunity/DeBot
